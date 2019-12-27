@@ -25,7 +25,7 @@ const canvas = document.getElementById("streamer-tsne-grid-canvas"),
     profile_height = canvas.height/dim;
     ctx.textAlign="left";
     ctx.textBaseline = "top";
-    ctx.font="15px Georgia";
+    ctx.font="15px";
 for(let v of streamers_tsne_grid){
     let streamer = streamer_by_id[v.streamer_id],
         x = v.x*profile_width, 

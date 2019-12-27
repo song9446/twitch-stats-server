@@ -63,6 +63,7 @@ async fn main() -> anyhow::Result<()> {
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL");
     let manager = ConnectionManager::<PgConnection>::new(db_url);
     let dbpool = r2d2::Pool::builder().build(manager).expect("Failed to create pool.");
+    let host_address = std::env::var("HOST_ADDRESS").expect("HOST_ADDRESS");
 
     HttpServer::new(move || {
         App::new()
@@ -73,7 +74,7 @@ async fn main() -> anyhow::Result<()> {
             .service(streamers)
             .service(streamers_tsne_grid)
             .default_service(
-                fs::Files::new("/", "./static/").index_file("index.html"),
+                fs::Files::new("/", "./web/public").index_file("index.html"),
             )
             //.service(web::resource("/api/streamer").route(web::get().to(streamer)))
             /*.service(
@@ -85,7 +86,7 @@ async fn main() -> anyhow::Result<()> {
                 )
             .service(web::resource("/test1.html").to(|| async { "Test\r\n" }))*/
     })
-    .bind("127.0.0.1:8080")?
+    .bind(host_address)?
     .workers(1)
     .run()
     .await?;
