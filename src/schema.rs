@@ -51,7 +51,7 @@ table! {
 }
 
 table! {
-    streamer_tsne_pos (streamer_id) {
+    streamer_tsne_pos (x, y) {
         streamer_id -> Int8,
         x -> Int4,
         y -> Int4,
