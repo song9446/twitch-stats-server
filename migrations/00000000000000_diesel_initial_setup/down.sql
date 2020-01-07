@@ -1,7 +1,9 @@
+DROP TABLE streamer_follower_count_changes;
+DROP TABLE streamer_chatter_count_changes;
+DROP TABLE streamer_viewer_count_changes;
+DROP TABLE streamer_stream_metadata_changes;
+DROP TABLE streamer_clusters;
 DROP TABLE streamer_tsne_pos;
 DROP TABLE streamer_similarities;
-DROP TABLE chatter_migrations;
-DROP TABLE stream_changes;
-DROP TABLE streams;
 DROP TABLE games;
 DROP TABLE streamers;

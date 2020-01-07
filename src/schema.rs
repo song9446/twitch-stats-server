@@ -1,13 +1,4 @@
 table! {
-    chatter_migrations (before, after, time) {
-        before -> Int8,
-        after -> Int8,
-        count -> Int4,
-        time -> Timestamp,
-    }
-}
-
-table! {
     games (id) {
         id -> Int8,
         name -> Nullable<Text>,
@@ -16,14 +7,61 @@ table! {
 }
 
 table! {
-    stream_changes (stream_id, time) {
-        stream_id -> Int8,
-        viewer_count -> Nullable<Int4>,
-        chatter_count -> Nullable<Int4>,
+    streamer_chatter_count_changes (streamer_id, time) {
+        streamer_id -> Int8,
+        chatter_count -> Int4,
+        time -> Timestamptz,
+    }
+}
+
+table! {
+    streamer_clusters (streamer_id) {
+        streamer_id -> Int8,
+        cluster -> Int4,
+        probability -> Float8,
+    }
+}
+
+table! {
+    streamer_follower_count_changes (streamer_id, time) {
+        streamer_id -> Int8,
+        follower_count -> Int4,
+        time -> Timestamptz,
+    }
+}
+
+table! {
+    streamer_similarities (subject, object) {
+        subject -> Int8,
+        object -> Int8,
+        ratio -> Float8,
+    }
+}
+
+table! {
+    streamer_stream_metadata_changes (streamer_id, time) {
+        streamer_id -> Int8,
         game_id -> Nullable<Int8>,
-        language -> Nullable<Bpchar>,
+        language -> Nullable<Text>,
         title -> Nullable<Text>,
-        time -> Timestamp,
+        started_at -> Nullable<Timestamptz>,
+        time -> Timestamptz,
+    }
+}
+
+table! {
+    streamer_tsne_pos (x, y) {
+        streamer_id -> Int8,
+        x -> Int4,
+        y -> Int4,
+    }
+}
+
+table! {
+    streamer_viewer_count_changes (streamer_id, time) {
+        streamer_id -> Int8,
+        viewer_count -> Int4,
+        time -> Timestamptz,
     }
 }
 
@@ -42,41 +80,22 @@ table! {
     }
 }
 
-table! {
-    streamer_similarities (subject, object) {
-        subject -> Int8,
-        object -> Int8,
-        ratio -> Float8,
-    }
-}
-
-table! {
-    streamer_tsne_pos (x, y) {
-        streamer_id -> Int8,
-        x -> Int4,
-        y -> Int4,
-    }
-}
-
-table! {
-    streams (id) {
-        id -> Int8,
-        streamer_id -> Nullable<Int8>,
-        started_at -> Timestamp,
-    }
-}
-
-joinable!(stream_changes -> games (game_id));
-joinable!(stream_changes -> streams (stream_id));
+joinable!(streamer_chatter_count_changes -> streamers (streamer_id));
+joinable!(streamer_clusters -> streamers (streamer_id));
+joinable!(streamer_follower_count_changes -> streamers (streamer_id));
+joinable!(streamer_stream_metadata_changes -> games (game_id));
+joinable!(streamer_stream_metadata_changes -> streamers (streamer_id));
 joinable!(streamer_tsne_pos -> streamers (streamer_id));
-joinable!(streams -> streamers (streamer_id));
+joinable!(streamer_viewer_count_changes -> streamers (streamer_id));
 
 allow_tables_to_appear_in_same_query!(
-    chatter_migrations,
     games,
-    stream_changes,
-    streamers,
+    streamer_chatter_count_changes,
+    streamer_clusters,
+    streamer_follower_count_changes,
     streamer_similarities,
+    streamer_stream_metadata_changes,
     streamer_tsne_pos,
-    streams,
+    streamer_viewer_count_changes,
+    streamers,
 );
