@@ -32,34 +32,37 @@ CREATE TABLE streamer_clusters (
     probability FLOAT NOT NULL DEFAULT 0,
     PRIMARY KEY (streamer_id)
 );
-CREATE TABLE streamer_stream_metadata_changes (
-  streamer_id BIGINT REFERENCES streamers (id),
+CREATE TABLE stream_metadata_changes (
+  streamer_id BIGINT NOT NULL REFERENCES streamers (id),
   game_id BIGINT REFERENCES games (id),
-  language TEXT,
-  title TEXT,
-  started_at TIMESTAMPTZ DEFAULT NOW(),
+  language TEXT NOT NULL,
+  title TEXT NOT NULL,
+  started_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (streamer_id, time)
 );
-CREATE TABLE streamer_viewer_count_changes (
-  streamer_id BIGINT REFERENCES streamers (id),
+CREATE TABLE stream_changes (
+  streamer_id BIGINT NOT NULL REFERENCES streamers (id),
   viewer_count INT NOT NULL DEFAULT 0,
+  chatter_count INT NOT NULL DEFAULT 0,
+  follower_count INT NOT NULL DEFAULT 0,
   time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (streamer_id, time)
 );
+/*
 CREATE TABLE streamer_chatter_count_changes (
-  streamer_id BIGINT REFERENCES streamers (id),
+  streamer_id BIGINT NOT NULL REFERENCES streamers (id),
   chatter_count INT NOT NULL DEFAULT 0,
   time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (streamer_id, time)
 );
 CREATE TABLE streamer_follower_count_changes (
-  streamer_id BIGINT REFERENCES streamers (id),
+  streamer_id BIGINT NOT NULL REFERENCES streamers (id),
   follower_count INT NOT NULL DEFAULT 0,
   time TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   PRIMARY KEY (streamer_id, time)
 );
-/*CREATE TABLE chatter_migrations (
+CREATE TABLE chatter_migrations (
     before BIGINT NOT NULL REFERENCES streamers (id),
     after BIGINT NOT NULL REFERENCES streamers (id),
     count FLOAT NOT NULL DEFAULT 0,

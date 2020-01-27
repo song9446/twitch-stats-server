@@ -9,7 +9,6 @@ export let edges = [];
 export let onrendered  = ()=>{};
 /*export let width = 500;
 export let height = 500;*/
-export let classes = "";
 
 let canvas;
 
@@ -33,13 +32,13 @@ $: if(canvas && (nodes != last_nodes || edges != last_edges)) {
   let width = canvas.getBoundingClientRect().width,
       height = canvas.getBoundingClientRect().height;
 	let ctx = canvas.getContext("2d");
-	ctx.setLineDash([10, 10]);
+	ctx.setLineDash([7, 7]);
 	ctx.globalAlpha = 0.5;
 	for(let node of nodes)
 		graph_nodes[node.id] = graph.newNode(node);
 	for(let edge of edges)
-		graph.newEdge(graph_nodes[edge.from], graph_nodes[edge.to]);
-	let layout = new Springy.Layout.ForceDirected(graph, 400.0, 400.0, 0.5, 0.10);
+    graph.newEdge(graph_nodes[edge.from], graph_nodes[edge.to], edge);
+	let layout = new Springy.Layout.ForceDirected(graph, 400.0, 400.0, 0.6, 0.0001);
 	if(renderer) renderer.stop();
 	renderer = new Springy.Renderer(layout,
 		function clear() {
@@ -49,6 +48,8 @@ $: if(canvas && (nodes != last_nodes || edges != last_edges)) {
 			ctx.beginPath();
 			p1 = project(p1, WIDTH, HEIGHT);
 			p2 = project(p2, WIDTH, HEIGHT);
+      ctx.lineWidth = (edge.data.strength) || 1.0;
+      ctx.globalAlpha = (edge.data.strength) || 1.0;
 			ctx.moveTo(p1.x, p1.y);
 			ctx.lineTo(p2.x, p2.y);
 			ctx.stroke();
@@ -75,7 +76,7 @@ $: if(canvas && (nodes != last_nodes || edges != last_edges)) {
 }
 </script>
 
-<div class="relative {classes}">
+<div class="relative {$$props.class}">
 <canvas bind:this={canvas} width={WIDTH} height={HEIGHT} class="w-full"> </canvas>
 {#each nodes as node}
 	<div bind:this={node.ref} id="{node.id}" class="node">
@@ -90,5 +91,8 @@ $: if(canvas && (nodes != last_nodes || edges != last_edges)) {
 	position: absolute; 
 	display: inline-block;
 	transform: translate(-50%, -50%);
+  width: fit-content;
+  top: 50%;
+  left: 50%;
 }
 </style>

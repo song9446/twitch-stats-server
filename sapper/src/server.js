@@ -9,12 +9,12 @@ const { PORT, NODE_ENV } = process.env;
 const dev = NODE_ENV === 'development';
 
 const options = {
-  key: readFileSync("../cert/certs/notroll.gg/privkey.pem"),
-  cert: readFileSync("../cert/certs/notroll.gg/fullchain.pem"),
+  key: readFileSync("../cert/certs/tsu.gg/privkey.pem"),
+  cert: readFileSync("../cert/certs/tsu.gg/fullchain.pem"),
 };
 
 function redirect_http_to_https(req, res, next) {
-  res.redirect = "https://notroll.gg";
+  res.redirect = "https://tsu.gg";
   res.writeHead(302, {
       Location: res.redirect,
       'Content-Type': 'text/plain',

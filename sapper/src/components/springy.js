@@ -468,7 +468,7 @@ export const Springy = (function () {
 		this.oRequestAnimationFrame ||
 		this.msRequestAnimationFrame)) ||
 		(function(callback, element) {
-			setTimeout(callback, 1);
+			setTimeout(callback, 10);
 		}), this);
 
 
