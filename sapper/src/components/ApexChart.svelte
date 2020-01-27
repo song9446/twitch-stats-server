@@ -63,7 +63,7 @@ import { onMount } from "svelte";
 export let options;
 let ApexCharts;
 let chart_el;
-let chart;
+export let chart;
 let mounted = false;
 $: width="100%";
 $: height = isNaN(options.chart.height - 0)? options.chart.height || "auto" : options.chart.height + "px";

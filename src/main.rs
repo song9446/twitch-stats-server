@@ -43,7 +43,36 @@ async fn streamer_map(dbpool: web::Data<Pool>) -> Result<HttpResponse, error::Er
 async fn streamer(dbpool: web::Data<Pool>, config: web::Data<Config>, id: web::Path<(i64,)>) -> Result<HttpResponse, error::Error> {
     web::block(move || -> Result<Vec<u8>, error::Error> {
         let dbconn: &PgConnection = &*dbpool.get()?;
-        let res = model::StreamerWithStatistics::load(dbconn, id.0, chrono::Utc::now() - config.recent_duration)?;
+        let res = model::Streamer::load(dbconn, id.0)?;
+        Ok(serde_cbor::to_vec(&res)?)
+    })
+    .await
+    .map_err(error::Error::from)
+    .map(|res| HttpResponse::Ok().body(res))
+}
+
+#[get("/api/streamer/{id}/similar-streamers")]
+async fn similar_streamers(dbpool: web::Data<Pool>, config: web::Data<Config>, id: web::Path<(i64,)>) -> Result<HttpResponse, error::Error> {
+    web::block(move || -> Result<Vec<u8>, error::Error> {
+        let dbconn: &PgConnection = &*dbpool.get()?;
+        let res = model::SimilarStreamer::load(dbconn, id.0)?;
+        Ok(serde_cbor::to_vec(&res)?)
+    })
+    .await
+    .map_err(error::Error::from)
+    .map(|res| HttpResponse::Ok().body(res))
+}
+
+#[derive(Serialize, Deserialize)]
+struct TimelineQuery {
+    from: chrono::DateTime<chrono::Utc>,
+    to: chrono::DateTime<chrono::Utc>,
+}
+#[get("/api/streamer/{id}/timeline")]
+async fn timeline(dbpool: web::Data<Pool>, config: web::Data<Config>, id: web::Path<(i64,)>, query: web::Query<TimelineQuery>) -> Result<HttpResponse, error::Error> {
+    web::block(move || -> Result<Vec<u8>, error::Error> {
+        let dbconn: &PgConnection = &*dbpool.get()?;
+        let res = model::Timeline::load(dbconn, id.0, query.from, query.to)?;
         Ok(serde_cbor::to_vec(&res)?)
     })
     .await
@@ -73,6 +102,23 @@ async fn thin_streamers(dbpool: web::Data<Pool>, query: web::Query<ThinStreamerQ
                 .load::<model::ThinStreamer>(dbconn)?,
             _ => return Err(error::Error::BadRequest),
         }; 
+        Ok(serde_cbor::to_vec(&res)?)
+    })
+    .await
+    .map_err(error::Error::from)
+    .map(|res| HttpResponse::Ok().body(res))
+}
+
+#[derive(Serialize, Deserialize)]
+struct StreamRangesQuery {
+    from: chrono::DateTime<chrono::Utc>,
+    to: chrono::DateTime<chrono::Utc>,
+}
+#[get("/api/streamer/{id}/stream-ranges")]
+async fn stream_ranges(dbpool: web::Data<Pool>, config: web::Data<Config>, id: web::Path<(i64,)>, query: web::Query<StreamRangesQuery>) -> Result<HttpResponse, error::Error> {
+    web::block(move || -> Result<Vec<u8>, error::Error> {
+        let dbconn: &PgConnection = &*dbpool.get()?;
+        let res = model::StreamRange::load(dbconn, id.0, query.from, query.to)?;
         Ok(serde_cbor::to_vec(&res)?)
     })
     .await
@@ -129,6 +175,9 @@ async fn main() {
             .service(streamer_map)
             //.service(streamers)
             .service(thin_streamers)
+            .service(similar_streamers)
+            .service(timeline)
+            .service(stream_ranges)
             /*.default_service(
                 fs::Files::new("/", "./sapper/__sapper__/export/").index_file("index.html"),
                 )*/

@@ -7,10 +7,31 @@ table! {
 }
 
 table! {
-    streamer_chatter_count_changes (streamer_id, time) {
+    stream_changes (streamer_id, time) {
         streamer_id -> Int8,
+        viewer_count -> Int4,
         chatter_count -> Int4,
+        follower_count -> Int4,
         time -> Timestamptz,
+        chatting_speed -> Float8,
+    }
+}
+
+table! {
+    stream_metadata_changes (streamer_id, time) {
+        streamer_id -> Int8,
+        game_id -> Nullable<Int8>,
+        language -> Text,
+        title -> Text,
+        started_at -> Timestamptz,
+        time -> Timestamptz,
+    }
+}
+
+table! {
+    stream_ranges (streamer_id, range) {
+        streamer_id -> Int8,
+        range -> Tstzrange,
     }
 }
 
@@ -23,14 +44,6 @@ table! {
 }
 
 table! {
-    streamer_follower_count_changes (streamer_id, time) {
-        streamer_id -> Int8,
-        follower_count -> Int4,
-        time -> Timestamptz,
-    }
-}
-
-table! {
     streamer_similarities (subject, object) {
         subject -> Int8,
         object -> Int8,
@@ -39,29 +52,10 @@ table! {
 }
 
 table! {
-    streamer_stream_metadata_changes (streamer_id, time) {
-        streamer_id -> Int8,
-        game_id -> Nullable<Int8>,
-        language -> Nullable<Text>,
-        title -> Nullable<Text>,
-        started_at -> Nullable<Timestamptz>,
-        time -> Timestamptz,
-    }
-}
-
-table! {
     streamer_tsne_pos (x, y) {
         streamer_id -> Int8,
         x -> Int4,
         y -> Int4,
-    }
-}
-
-table! {
-    streamer_viewer_count_changes (streamer_id, time) {
-        streamer_id -> Int8,
-        viewer_count -> Int4,
-        time -> Timestamptz,
     }
 }
 
@@ -77,25 +71,24 @@ table! {
         #[sql_name = "type"]
         type_ -> Nullable<Text>,
         is_streaming -> Bool,
+        average_viewer_count -> Int4,
     }
 }
 
-joinable!(streamer_chatter_count_changes -> streamers (streamer_id));
+joinable!(stream_changes -> streamers (streamer_id));
+joinable!(stream_metadata_changes -> games (game_id));
+joinable!(stream_metadata_changes -> streamers (streamer_id));
+joinable!(stream_ranges -> streamers (streamer_id));
 joinable!(streamer_clusters -> streamers (streamer_id));
-joinable!(streamer_follower_count_changes -> streamers (streamer_id));
-joinable!(streamer_stream_metadata_changes -> games (game_id));
-joinable!(streamer_stream_metadata_changes -> streamers (streamer_id));
 joinable!(streamer_tsne_pos -> streamers (streamer_id));
-joinable!(streamer_viewer_count_changes -> streamers (streamer_id));
 
 allow_tables_to_appear_in_same_query!(
     games,
-    streamer_chatter_count_changes,
+    stream_changes,
+    stream_metadata_changes,
+    stream_ranges,
     streamer_clusters,
-    streamer_follower_count_changes,
     streamer_similarities,
-    streamer_stream_metadata_changes,
     streamer_tsne_pos,
-    streamer_viewer_count_changes,
     streamers,
 );

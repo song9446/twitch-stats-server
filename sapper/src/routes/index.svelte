@@ -1,11 +1,15 @@
 <script>
-import StreamerMap from "../components/StreamerMap.svelte";
+import { onMount } from "svelte";
+onMount(()=>{
+  window.location = "map";
+});
 </script>
 
 <svelte:head>
 	<title>스트리머 지도</title>
 </svelte:head>
 
-<a href="hidden-links" style="visibility: hidden; position: absolute;"></a>
-<StreamerMap />
+<div>
+잠시만요..
+</div>
 
