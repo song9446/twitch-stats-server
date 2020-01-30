@@ -286,7 +286,7 @@ onMount(async ()=> {
     stream_changes[i][4] = sm;
   }
   for(let i=0, l=chatting_speed_sm.length; i<l; ++i)
-    stream_changes[i + sm_n-1][4] = chatting_speed_sm[i];
+    stream_changes[Math.min(stream_changes.length-1, i + sm_n-1)][4] = chatting_speed_sm[i];
 
 	svg.onmousemove = function(e){
 		let x = e.clientX - svg.getBoundingClientRect().x, 
