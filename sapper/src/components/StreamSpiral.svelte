@@ -1,5 +1,9 @@
-<canvas bind:this={canvas} class="{$$props.class}">
+<div class="{$$props.class} relative">
+<canvas bind:this={canvas} class="w-full h-full">
 </canvas>
+<canvas bind:this={ui_canvas} class="absolute w-full h-full" on:mousemove={mousemove} on:mouseover={mouseover} on:mouseleave={mouseleave}>
+</canvas>
+</div>
 
 <script context="module">
 function is_overlap(ranges, point){
@@ -38,8 +42,24 @@ let to = new Date(today.getTime() + 1000*60*60*24);
 let from = new Date(today.getTime() - 1000*60*60*24*(days_ago-1));
 
 let canvas;
+let ui_canvas;
 
 let last_streamer = null;
+
+let mouse_in = false;
+let mouse_x = 0; 
+let mouse_y = 0;
+function mousemove(e){
+  mouse_in = true;
+  mouse_x = e.clientX - canvas.getBoundingClientRect().x;
+  mouse_y = e.clientY - canvas.getBoundingClientRect().y;
+}
+function mouseover(){
+  mouse_in = true;
+}
+function mouseleave(){
+  mouse_in = false;
+}
 
 $: if(canvas && last_streamer != streamer) {
   last_streamer = streamer;
@@ -140,6 +160,8 @@ $: if(canvas && last_streamer != streamer) {
       height = canvas.getBoundingClientRect().width;
   canvas.width = width;
   canvas.height = height;
+  ui_canvas.width = width;
+  ui_canvas.height = height;
 
   let ctx = canvas.getContext("2d");
   //ctx.fillStyle = "#2d3748";
@@ -276,5 +298,14 @@ $: if(canvas && last_streamer != streamer) {
     ctx.fillText(day_text[(i+day_start)%7], x2, y2);
   }
   ctx.stroke();
+  let frame;
+  /*(function loop() {
+    frame = requestAnimationFrame(loop);
+    if(search) 
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }());
+  return ()=>{
+    cancelAnimationFrame(frame);
+  }*/
 })};
 </script>

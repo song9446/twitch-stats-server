@@ -34,7 +34,9 @@
 				<defs>
 					{#each Object.values(games) as game}
 					<pattern id="game-box-art-{game.id}" width={game_box_art_width} height={game_box_art_height} patternUnits="userSpaceOnUse">
-						<image xlink:href={game.box_art_url.replace("{width}", game_box_art_width).replace("{height}", game_box_art_height)} width={game_box_art_width} height={game_box_art_height} x=0 y=0 > </image>
+            {#if game.box_art_url}
+              <image xlink:href={game.box_art_url.replace("{width}", game_box_art_width).replace("{height}", game_box_art_height)} width={game_box_art_width} height={game_box_art_height} x=0 y=0 > </image>
+            {/if}
 					</pattern>
 					{/each}
 				</defs>
@@ -80,7 +82,7 @@
 					{#each data_chunks as data}
             <!--<path fill="#CDA8C7" stroke="#B498AE" stroke-width=1.0 d="{data.path[0]}" />-->
             <path fill="#CBD5E0" stroke="#A0AEC0" stroke-width=1.0 d="{data.path[0]}" />
-            {#if data[0] && data[0][5] && data[0][5].game && games[data[0][5].game.id]} 
+            {#if data[0] && data[0][5] && data[0][5].game && games[data[0][5].game.id] && data[0][5].game.box_art_url}
               <path 
                 style="fill:url(#game-box-art-{data[0][5].game.id})"
                 stroke="#A0AEC0" stroke-width=1.0 d="{data.path[1]}" />
