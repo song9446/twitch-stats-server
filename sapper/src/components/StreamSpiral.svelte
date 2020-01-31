@@ -70,6 +70,8 @@ $: if(canvas && last_streamer != streamer) {
   API.stream_ranges(streamer.id, from, to).then(stream_ranges => {
   let strea
   //let stream_ranges = await API.stream_ranges(streamer.id, from, to);
+  if(!stream_ranges)
+    return null;
   let trimed_from = new Date(stream_ranges[0][0]*1000); trimed_from.setHours(0,0,0,0);
   let from_timestamp = Math.round(trimed_from.getTime()/1000),
       to_timestamp = Math.round(to.getTime()/1000);
