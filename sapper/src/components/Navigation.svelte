@@ -1,10 +1,15 @@
 <script>
 import StreamerAutoComplete from "./StreamerAutoComplete.svelte";
+<<<<<<< HEAD
 import { faMap } from '@fortawesome/free-solid-svg-icons/faMap'
 import { faExchangeAlt } from '@fortawesome/free-solid-svg-icons/faExchangeAlt'
 const pages = [
     {segment: "map", name: "지도", icon: faMap},
     {segment: "migration", name: "시청자 이동", icon: faExchangeAlt},
+=======
+const pages = [
+    {segment: "map", name: "지도"},
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     /*{segment: "straw", name: "빨대"},*/
   ];
 
@@ -13,6 +18,7 @@ export let segment;
 function on_streamer_search(target) {
   window.location.pathname = "/streamer/" + target.id;
 }
+<<<<<<< HEAD
 console.log("segment", segment);
 </script>
 
@@ -47,12 +53,38 @@ console.log("segment", segment);
           <StreamerAutoComplete bind:onselect={on_streamer_search} placeholder="검색" inputid="streamer-search-input" class="ml-4" id="navigation-streamer-search"/>
         </div> 
       {/if}
+=======
+</script>
+
+<nav class="bg-white w-full relative z-40" role="navigation">
+  <div class="container flex flex-row flex-wrap justify-between items-center m-auto">
+    <div class="flex flex-row items-center flex-wrap">
+      <div class="ml-4">
+        <a href="/" class="text-xl font-bold tracking-wider title"> 트수 gg </a>
+      </div> 
+      <div class="flex overflow-hidden">
+        {#each pages as page}
+          <a class="py-3 ml-6 -mb-px no-underline border-b-3 text-sm border-transparent {segment === page.segment? 'border-primary-600 text-primary-600' : ''}" href="/{page.segment}" 
+            class:current-link="{segment === page.segment}">
+            {page.name}</a> 
+        {/each}
+      </div>
+      <div class="flex items-center -mb-px border-b-3 border-transparent {"streamer" === segment? 'border-primary-600 text-primary-600' : ''}">
+        <label 
+          class="py-3 ml-6 text-sm"
+          for="streamer-search-input"> 
+          스트리머 
+        </label>
+        <StreamerAutoComplete bind:onselect={on_streamer_search} placeholder="검색" inputid="streamer-search-input" class="ml-2" id="navigation-streamer-search"/>
+      </div> 
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     </div>
   </div>
 </nav>
 
 <style>
   .current-link {
+<<<<<<< HEAD
     border-bottom-color: #CDA8C7;
     color: #CDA8C7;
   }
@@ -75,4 +107,12 @@ console.log("segment", segment);
   }
   .title:hover {
   }
+=======
+    @apply border-purple-500 text-purple;
+  }
+  .title {
+    text-shadow: 3px 3px 0 #CDA8C7, -1px -1px 0 #CDA8C7, 1px -1px 0 #CDA8C7, -1px 1px 0 #CDA8C7, 1px 1px 0 #CDA8C7;
+    color: white;
+  }
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 </style>

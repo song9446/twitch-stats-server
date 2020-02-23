@@ -31,4 +31,7 @@ serde_cbor = "0.10"
 uuid = { version = "0.5", features = ["serde", "v4"] }
 bytes = "0.4"
 csv = "1.0"
+<<<<<<< HEAD
 blake2 = "0.8"
+=======
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643

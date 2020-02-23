@@ -1,4 +1,5 @@
 table! {
+<<<<<<< HEAD
     comment_votes (fingerprint_hash, comment_id) {
         fingerprint_hash -> Bytea,
         comment_id -> Int4,
@@ -24,6 +25,8 @@ table! {
 }
 
 table! {
+=======
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     games (id) {
         id -> Int8,
         name -> Nullable<Text>,
@@ -69,6 +72,7 @@ table! {
 }
 
 table! {
+<<<<<<< HEAD
     streamer_recent_chatting_keywords (streamer_id, keyword) {
         streamer_id -> Int8,
         keyword -> Text,
@@ -77,6 +81,8 @@ table! {
 }
 
 table! {
+=======
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     streamer_similarities (subject, object) {
         subject -> Int8,
         object -> Int8,
@@ -105,6 +111,7 @@ table! {
         type_ -> Nullable<Text>,
         is_streaming -> Bool,
         average_viewer_count -> Int4,
+<<<<<<< HEAD
         average_subscriber_chat_ratio -> Float8,
         primary_game_id -> Nullable<Int8>,
         secondary_game_id -> Nullable<Int8>,
@@ -139,11 +146,17 @@ table! {
 }
 
 joinable!(comments -> streamers (streamer_id));
+=======
+    }
+}
+
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 joinable!(stream_changes -> streamers (streamer_id));
 joinable!(stream_metadata_changes -> games (game_id));
 joinable!(stream_metadata_changes -> streamers (streamer_id));
 joinable!(stream_ranges -> streamers (streamer_id));
 joinable!(streamer_clusters -> streamers (streamer_id));
+<<<<<<< HEAD
 joinable!(streamer_recent_chatting_keywords -> streamers (streamer_id));
 joinable!(streamer_tsne_pos -> streamers (streamer_id));
 joinable!(streamers_average_game_distribution -> games (game_id));
@@ -153,11 +166,17 @@ joinable!(streamers_average_subscriber_distribution -> streamers (streamer_id));
 allow_tables_to_appear_in_same_query!(
     comment_votes,
     comments,
+=======
+joinable!(streamer_tsne_pos -> streamers (streamer_id));
+
+allow_tables_to_appear_in_same_query!(
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     games,
     stream_changes,
     stream_metadata_changes,
     stream_ranges,
     streamer_clusters,
+<<<<<<< HEAD
     streamer_recent_chatting_keywords,
     streamer_similarities,
     streamer_tsne_pos,
@@ -165,4 +184,9 @@ allow_tables_to_appear_in_same_query!(
     streamers_average_game_distribution,
     streamers_average_subscriber_distribution,
     viewer_migration_counts,
+=======
+    streamer_similarities,
+    streamer_tsne_pos,
+    streamers,
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 );

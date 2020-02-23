@@ -1,6 +1,7 @@
 import { CBOR } from './cbor.js';
 import fetch from 'node-fetch';
 const API_SERVER_HOST = "https://tsu.gg:3000"
+<<<<<<< HEAD
 const BLACKLIST = [
   462658994, //포칸지우티비
   484584043, //폭스홀짝
@@ -34,10 +35,34 @@ async function fetch_cbor(path) {
 export const API = {
   streamer_map: async function () {
     return (await fetch_cbor(API_SERVER_HOST + "/api/streamer-map")).filter(s => !BLACKLIST.includes(s.id));
+=======
+async function _fetch(path) {
+  if(this != null && this.fetch != null) 
+    return await this.fetch(path);
+  /*else if(window != undefined && window.fetch != null)
+    return await window.fetch(path);*/
+  else
+    return await fetch(path);
+}
+async function fetch_cbor(path) {
+  let res = await _fetch(path);
+  if(res.status !== 200){
+    alert(res.status);
+  } 
+  else {
+    let body = await res.arrayBuffer();
+    return CBOR.decode(body);
+  }
+}
+export const API = {
+  streamer_map: async function () {
+    return await fetch_cbor(API_SERVER_HOST + "/api/streamer-map");
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
   },
   streamer: async function (id) {
     return await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}`);
   },
+<<<<<<< HEAD
   thin_streamers: async function (search_or_ids) {
     if(typeof(search_or_ids) == "string") 
       return await fetch_cbor(API_SERVER_HOST + `/api/thin-streamers?search=${search_or_ids}`);
@@ -45,15 +70,24 @@ export const API = {
       search_or_ids = "ids[]=" + search_or_ids.join("&ids[]=")
       return await fetch_cbor(API_SERVER_HOST + `/api/thin-streamers?${search_or_ids}`);
     }
+=======
+  thin_streamers: async function (search) {
+    return await fetch_cbor(API_SERVER_HOST + `/api/thin-streamers?search=${search}`);
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
   },
   timeline: async function (id, from, to) {
     return await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/timeline?from=${from.toISOString()}&to=${to.toISOString()}`);
   },
+<<<<<<< HEAD
   similar_streamers: async function (id, offset=0) {
     if(!BLACKLIST.includes(id-0))
       return (await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/similar-streamers?offset=${offset}`)).filter(s => !BLACKLIST.includes(s.id));
     else
       return (await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/similar-streamers?offset=${offset}`)).filter(s => BLACKLIST.includes(s.id));
+=======
+  similar_streamers: async function (id) {
+    return await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/similar-streamers`);
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
   },
   stream_ranges: async function (id, from, to) {
     return await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/stream-ranges?from=${from.toISOString()}&to=${to.toISOString()}`);
@@ -64,6 +98,7 @@ export const API = {
         [new Date() / 1000 - 60*60*2, new Date()/1000 - 60*60],
       ];*/
   },
+<<<<<<< HEAD
   comments: async function(id, offset=0) {
     return await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/comments?offset=${offset}`);
   },
@@ -117,4 +152,6 @@ export const API = {
   viewer_migration_count_ranking: async function(offset) {
     return await fetch_cbor(API_SERVER_HOST + `/api/viewer-migration-ranking?offset=${offset}`);
   },
+=======
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 }

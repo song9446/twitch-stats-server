@@ -4,6 +4,7 @@
 	export let segment;
 </script>
 
+<<<<<<< HEAD
 <header>
   <Navigation {segment} />
 </header>
@@ -23,3 +24,8 @@
     </span>
   </div>
 </footer>
+=======
+<Navigation {segment} />
+
+<slot></slot>
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643

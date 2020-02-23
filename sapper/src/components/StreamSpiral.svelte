@@ -1,5 +1,9 @@
 <div class="{$$props.class} relative">
+<<<<<<< HEAD
 <canvas bind:this={canvas} class="w-full">
+=======
+<canvas bind:this={canvas} class="w-full h-full">
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 </canvas>
 <canvas bind:this={ui_canvas} class="absolute w-full h-full" on:mousemove={mousemove} on:mouseover={mouseover} on:mouseleave={mouseleave}>
 </canvas>
@@ -8,6 +12,10 @@
 <script context="module">
 function is_overlap(ranges, point){
   let res = ranges.some(range => range[0] <= point && point <= range[1])
+<<<<<<< HEAD
+=======
+  //console.log(ranges.map(j=>j.map(k=>k/60/60)), point/60/60, res);
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
   return res;
 }
 function fill_hole(ranges, interval){
@@ -34,10 +42,13 @@ export let mean_streaming_time_reliability = 0.0;
 export let streaming_time_ranges_variance = 0.0;
 export let total_streaming_time_ratio = 0.0;
 export let streaming_time_ranges_regularity = 0.0; 
+<<<<<<< HEAD
 export let streaming_start_time = 0.0; 
 export let streaming_end_time = 0.0; 
 export let streaming_start_time_std= 0.0; 
 export let streaming_end_time_std= 0.0; 
+=======
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 const days_ago = 7*8;
 const interval = 60*60*24;
 let today = new Date(); today.setHours(0,0,0,0);
@@ -71,6 +82,10 @@ $: if(canvas && last_streamer != streamer) {
   streaming_time_ranges_variance = 0.0;
   mean_streaming_time_reliability = 0.0;
   API.stream_ranges(streamer.id, from, to).then(stream_ranges => {
+<<<<<<< HEAD
+=======
+  let strea
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
   //let stream_ranges = await API.stream_ranges(streamer.id, from, to);
   if(!stream_ranges)
     return null;
@@ -79,7 +94,11 @@ $: if(canvas && last_streamer != streamer) {
       to_timestamp = Math.round(to.getTime()/1000);
   let chunks = [[]];
   for(let i=0, j=0, l=stream_ranges.length; i<l; ++i){
+<<<<<<< HEAD
     total_streaming_time_ratio += (stream_ranges[i][1] - stream_ranges[i][0]) / (to_timestamp - stream_ranges[0][0]);
+=======
+    total_streaming_time_ratio += (stream_ranges[i][1] - stream_ranges[i][0]) / (to_timestamp - from_timestamp);
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     while(stream_ranges[i][1] >= from_timestamp + (j+2)*interval) {
       chunks.push([]);
       ++j;
@@ -120,6 +139,11 @@ $: if(canvas && last_streamer != streamer) {
   let filled_ranges = fill_hole(stream_ranges, 60*60).map(v=>[(v[0]-from_timestamp)%interval / interval, (v[1]-from_timestamp)%interval / interval]);
   let mean2 = filled_ranges.reduce((a,b)=>[a[0]+b[0], a[1]+b[1]]).map(v=>v/filled_ranges.length);
   let var2 = filled_ranges.reduce((res,v) => [res[0] + (v[0]-mean2[0])*(v[0]-mean2[0]), res[1] + (v[1]-mean2[1])*(v[1]-mean2[1])], [0,0]).map(v=>v/filled_ranges.length);
+<<<<<<< HEAD
+=======
+  console.log(filled_ranges);
+  console.log("mean2, var2", mean2, var2);
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
   streaming_time_ranges_regularity  = 0.0;
   for(let i=0, l=chunks.length; i<l; ++i){
     for(let j=i+1; j<l; ++j){
@@ -130,8 +154,15 @@ $: if(canvas && last_streamer != streamer) {
     }
   }
   streaming_time_ranges_regularity = streaming_time_ranges_regularity / ((chunks.length) * (chunks.length-1) / 2)
+<<<<<<< HEAD
   let a = 0, b=0;
   let mean_of_mean = mean.map((v, i) => (splits[i+1] - splits[i]) * v).reduce((a,b)=>a+b) / total;
+=======
+  console.log(splits, chunks, streaming_time_ranges_variance, mean, streaming_time_ranges_regularity);
+  let a = 0, b=0;
+  let mean_of_mean = mean.map((v, i) => (splits[i+1] - splits[i]) * v).reduce((a,b)=>a+b) / total;
+  console.log("mean of mean", mean_of_mean);
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
   mean_of_mean = 0.5;
   mean_streaming_time_reliability = 
     mean.map((v, i) => v >= mean_of_mean? (splits[i+1]-splits[i])*v: 0).reduce((a,b)=>a+b) / 
@@ -152,6 +183,7 @@ $: if(canvas && last_streamer != streamer) {
       }
     }
   }
+<<<<<<< HEAD
   if(mean_streaming_time_ranges.length>1 && Math.abs(mean_streaming_time_ranges[mean_streaming_time_ranges.length-1][1] - mean_streaming_time_ranges[0][0]) <= 60*60)
     mean_streaming_time_ranges[0][0] = mean_streaming_time_ranges.pop()[0]
   mean_streaming_time_ranges = mean_streaming_time_ranges;
@@ -176,6 +208,11 @@ $: if(canvas && last_streamer != streamer) {
       .map(s => Math.abs(s[1]-streaming_end_time))
       .map(v => v < interval*0.5? v: interval-v)
       .reduce((a, s) => a+s*s, 0)/(stream_ranges_processed.length-1));
+=======
+  mean_streaming_time_ranges = mean_streaming_time_ranges;
+  console.log("mean ranges", mean_streaming_time_ranges);
+  console.log("mean rel", mean_streaming_time_reliability);
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 
   let width = canvas.getBoundingClientRect().width,
       height = canvas.getBoundingClientRect().width;

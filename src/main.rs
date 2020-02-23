@@ -3,9 +3,14 @@ extern crate diesel;
 #[macro_use]
 extern crate serde_derive;
 
+<<<<<<< HEAD
 use blake2::{Blake2b, Blake2s, Digest};
 use actix_cors::Cors;
 use actix_web::{get, post, patch, middleware, web, App, HttpRequest, HttpResponse, HttpServer, Error};
+=======
+use actix_cors::Cors;
+use actix_web::{get, middleware, web, App, HttpRequest, HttpResponse, HttpServer, Error};
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 use actix_files as fs;
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
@@ -13,7 +18,10 @@ use dotenv;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
 
 
+<<<<<<< HEAD
 mod schema_manual;
+=======
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 mod schema;
 mod model;
 mod error;
@@ -45,7 +53,11 @@ async fn streamer_map(dbpool: web::Data<Pool>) -> Result<HttpResponse, error::Er
 async fn streamer(dbpool: web::Data<Pool>, config: web::Data<Config>, id: web::Path<(i64,)>) -> Result<HttpResponse, error::Error> {
     web::block(move || -> Result<Vec<u8>, error::Error> {
         let dbconn: &PgConnection = &*dbpool.get()?;
+<<<<<<< HEAD
         let res = model::FatStreamer::load(dbconn, id.0)?;
+=======
+        let res = model::Streamer::load(dbconn, id.0)?;
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
         Ok(serde_cbor::to_vec(&res)?)
     })
     .await
@@ -53,6 +65,7 @@ async fn streamer(dbpool: web::Data<Pool>, config: web::Data<Config>, id: web::P
     .map(|res| HttpResponse::Ok().body(res))
 }
 
+<<<<<<< HEAD
 #[derive(Serialize, Deserialize)]
 struct SimilarStreamersQuery {
     offset: Option<i64>,
@@ -63,6 +76,13 @@ async fn similar_streamers(dbpool: web::Data<Pool>, config: web::Data<Config>, i
     web::block(move || -> Result<Vec<u8>, error::Error> {
         let dbconn: &PgConnection = &*dbpool.get()?;
         let res = model::SimilarStreamer::load(dbconn, id.0, limit, query.offset.unwrap_or(0))?;
+=======
+#[get("/api/streamer/{id}/similar-streamers")]
+async fn similar_streamers(dbpool: web::Data<Pool>, config: web::Data<Config>, id: web::Path<(i64,)>) -> Result<HttpResponse, error::Error> {
+    web::block(move || -> Result<Vec<u8>, error::Error> {
+        let dbconn: &PgConnection = &*dbpool.get()?;
+        let res = model::SimilarStreamer::load(dbconn, id.0)?;
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
         Ok(serde_cbor::to_vec(&res)?)
     })
     .await
@@ -87,6 +107,7 @@ async fn timeline(dbpool: web::Data<Pool>, config: web::Data<Config>, id: web::P
     .map(|res| HttpResponse::Ok().body(res))
 }
 
+<<<<<<< HEAD
 sql_function!(fn lower(x: diesel::sql_types::Text) -> diesel::sql_types::Text);
 #[derive(Serialize, Deserialize)]
 struct ThinStreamerQuery {
@@ -98,17 +119,35 @@ struct ThinStreamerQuery {
 async fn thin_streamers(req: HttpRequest, dbpool: web::Data<Pool>) -> Result<HttpResponse, error::Error> {
 //async fn thin_streamers(dbpool: web::Data<Pool>, query: web::Query<ThinStreamerQuery>) -> Result<HttpResponse, error::Error> {
     let query: ThinStreamerQuery = serde_qs::Config::new(5, false).deserialize_str(&req.query_string()).map_err(|e| { error::Error::BadRequest })?;
+=======
+#[derive(Serialize, Deserialize)]
+struct ThinStreamerQuery {
+    search: Option<String>,
+    #[serde(default, deserialize_with = "util::from_csv_opt")]
+    ids: Option<Vec<i64>>,
+}
+#[get("/api/thin-streamers")]
+async fn thin_streamers(dbpool: web::Data<Pool>, query: web::Query<ThinStreamerQuery>) -> Result<HttpResponse, error::Error> {
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     web::block(move || -> Result<Vec<u8>, error::Error> {
         let dbconn: &PgConnection = &*dbpool.get()?;
         let res = match (&query.search, &query.ids) {
             (Some(search), None) => schema::streamers::table
                 .select((schema::streamers::id, schema::streamers::name, schema::streamers::profile_image_url, schema::streamers::is_streaming))
+<<<<<<< HEAD
                 .filter(lower(schema::streamers::name).like(format!("%{}%", search.to_lowercase())))
+=======
+                .filter(schema::streamers::name.like(format!("%{}%", search)))
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
                 .limit(10)
                 .load::<model::ThinStreamer>(dbconn)?,
             (None, Some(ids)) => schema::streamers::table
                 .select((schema::streamers::id, schema::streamers::name, schema::streamers::profile_image_url, schema::streamers::is_streaming))
+<<<<<<< HEAD
                 .filter(schema::streamers::id.eq(diesel::pg::expression::dsl::any(ids)))
+=======
+                .filter(schema::streamers::id.eq_any(ids))
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
                 .load::<model::ThinStreamer>(dbconn)?,
             _ => return Err(error::Error::BadRequest),
         }; 
@@ -136,6 +175,7 @@ async fn stream_ranges(dbpool: web::Data<Pool>, config: web::Data<Config>, id: w
     .map(|res| HttpResponse::Ok().body(res))
 }
 
+<<<<<<< HEAD
 #[derive(Serialize, Deserialize)]
 struct CommentsQuery {
     offset: Option<i64>,
@@ -328,6 +368,11 @@ struct Config {
     comment_num_per_page: i64,
     item_num_per_ranking_req: i64,
     item_num_per_similar_streamers: i64,
+=======
+#[derive(Clone)]
+struct Config {
+    recent_duration: chrono::Duration,
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 }
 #[actix_rt::main]
 async fn main() {
@@ -345,15 +390,22 @@ async fn main() {
         .fold(Cors::new(), |a, b| {
             a.allowed_origin(b)
         }).finish();*/
+<<<<<<< HEAD
     let recent_duration: i64 = std::env::var("RECENT_DURATION").unwrap_or("604800".to_string()).parse().unwrap();
+=======
+    let recent_duration: i64 = std::env::var("RECENT_DURATION").expect("RECENT_DURATION").parse().unwrap();
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     let private_key = std::env::var("PRIVATE_KEY").expect("PRIVATE_KEY");
     let cert = std::env::var("CERT").expect("CERT");
     
     let data = Config{
         recent_duration: chrono::Duration::seconds(recent_duration),
+<<<<<<< HEAD
         comment_num_per_page: std::env::var("COMMENT_NUM_PER_PAGE").unwrap_or("10".to_string()).parse().unwrap(),
         item_num_per_ranking_req: std::env::var("ITEM_NUM_PER_RANKING_REQ").unwrap_or("10".to_string()).parse().unwrap(),
         item_num_per_similar_streamers: std::env::var("ITEM_NUM_PER_RANKING_REQ").unwrap_or("10".to_string()).parse().unwrap(),
+=======
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
     };
 
     let mut ssl_builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
@@ -380,6 +432,7 @@ async fn main() {
             .service(similar_streamers)
             .service(timeline)
             .service(stream_ranges)
+<<<<<<< HEAD
             .service(comments)
             .service(write_comment)
             .service(vote_comment)
@@ -389,6 +442,8 @@ async fn main() {
             .service(streamer_ranking)
             .service(viewer_migration_count)
             .service(viewer_migration_count_ranking)
+=======
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
             /*.default_service(
                 fs::Files::new("/", "./sapper/__sapper__/export/").index_file("index.html"),
                 )*/

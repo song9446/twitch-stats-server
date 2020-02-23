@@ -117,6 +117,5 @@ dist
 
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
-
 nohup.out
 sapper/nohup.out

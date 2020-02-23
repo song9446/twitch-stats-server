@@ -63,9 +63,15 @@ $: if(canvas && (nodes != last_nodes || edges != last_edges)) {
 			p = project(p, width, height);
 			if(node){
         if(parseInt(node.style.left) != Math.floor(p.x))
+<<<<<<< HEAD
           node.style.left = p.x*100/width + "%";
         if(parseInt(node.style.top) != Math.floor(p.y))
           node.style.top = p.y*100/height + "%";
+=======
+          node.style.left = Math.floor(p.x) + "px";
+        if(parseInt(node.style.top) != Math.floor(p.y))
+          node.style.top = Math.floor(p.y) + "px";
+>>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 			}
 		},
     function onRenderStop() {
