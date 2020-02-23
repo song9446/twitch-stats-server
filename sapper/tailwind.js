@@ -57,7 +57,10 @@ module.exports = {
       },
     },
   },
-  variants: {},
+  variants: {
+    backgroundColor: ["hover", "focus", "even", "group-hover", "odd", "visited", "responsive", "active", "disabled"],
+    textColor: ['responsive', 'hover', 'focus', 'group-hover'],
+  },
   plugins: [
       require('tailwindcss-spinner')(),
       require('tailwindcss-transforms')({

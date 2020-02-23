@@ -1,0 +1,28 @@
+table! {
+    fat_streamers (id) {
+        id -> Int8,
+        login -> Text,
+        name -> Text,
+        profile_image_url -> Nullable<Text>, 
+        offline_image_url -> Nullable<Text>,
+        broadcaster_type -> Nullable<Text>, 
+        description -> Nullable<Text>, 
+        is_streaming -> Bool, 
+        average_viewer_count -> Int4, 
+        follower_count -> Int4, 
+        viewer_count -> Nullable<Int4>, 
+        viewer_chatter_ratio -> Nullable<Float8>, 
+        average_subscriber_ratio -> Nullable<Float8>,
+        average_subscriber_chat_ratio -> Float8,
+        chatting_speed -> Nullable<Float8>, 
+        general_game_player_score -> Float8, 
+        primary_game_id -> Nullable<Int8>, 
+        secondary_game_id -> Nullable<Int8>, 
+        ternary_game_id -> Nullable<Int8>, 
+        primary_game_name -> Nullable<Text>, 
+        secondary_game_name -> Nullable<Text>, 
+        ternary_game_name -> Nullable<Text>,
+        streaming_hours_per_week -> Nullable<Float8>,
+        last_streaming_time -> Nullable<Timestamptz>,
+    }
+}

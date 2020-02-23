@@ -31,7 +31,7 @@ if(dev){
       sirv('dehydrated', { dev: true, dotfiles: true}),
       sapper.middleware()
     )
-    .listen(80, err => {
+    .listen(8080, err => {
       if (err) console.log('error', err);
     });
 }

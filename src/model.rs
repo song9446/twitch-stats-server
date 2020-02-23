@@ -1,11 +1,13 @@
 use diesel::prelude::*;
 use diesel::RunQueryDsl;
 use diesel::QueryDsl;
+use diesel::pg::expression::dsl::any;
 use diesel::sql_types::*;
 use diesel::{r2d2::ConnectionManager, PgConnection};
 use std::collections::Bound;
+use super::schema_manual::*;
 use super::schema;
-use super::schema::stream_ranges;
+use super::schema::{stream_ranges, comments, streamers};
 use super::error;
 pub type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
@@ -104,6 +106,7 @@ impl StreamerMapElement {
             */
     }
 }
+
 /*
 joinable!(schema::streamer_tsne_pos -> schema::streamer_clusters (streamer_id));
 #[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
@@ -133,6 +136,47 @@ impl StreamerMapElement {
 }
 */
 
+#[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
+pub struct Game {
+    pub id: i64,
+    pub name: Option<String>,
+    pub box_art_url: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Queryable, Associations)]
+pub struct FatStreamer {
+    pub id: i64,
+    pub login: String,
+    pub name: String,
+    pub profile_image_url: Option<String>,
+    pub offline_image_url: Option<String>,
+    pub broadcaster_type: Option<String>,
+    pub description: Option<String>,
+    pub is_streaming: bool, 
+    pub average_viewer_count: i32, 
+    pub follower_count: i32, 
+    pub viewer_count: Option<i32>, 
+    pub viewer_chatter_ratio: Option<f64>, 
+    pub average_subscriber_ratio: Option<f64>,
+    pub average_subscriber_chat_ratio: f64,
+    pub chatting_speed: Option<f64>,
+    pub general_game_player_score: f64,
+    pub primary_game_id: Option<i64>,
+    pub secondary_game_id: Option<i64>, 
+    pub ternary_game_id: Option<i64>, 
+    pub primary_game_name: Option<String>, 
+    pub secondary_game_name: Option<String>, 
+    pub ternary_game_name: Option<String>,
+    pub streaming_hours_per_week: Option<f64>,
+    pub last_streaming_time: Option<chrono::DateTime<chrono::Utc>>,
+}
+impl FatStreamer {
+    pub fn load(dbconn: &PgConnection, id: i64) -> Result<FatStreamer, error::Error> {
+        Ok(fat_streamers::table
+            .filter(fat_streamers::id.eq(id))
+            .first::<FatStreamer>(dbconn)?)
+    }
+}
 
 #[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
 pub struct Streamer {
@@ -146,6 +190,11 @@ pub struct Streamer {
     pub type_: Option<String>,
     pub is_streaming: bool,
     pub average_viewer_count: i32,
+    pub average_subscriber_chat_ratio: f64,
+    pub primary_game_id: Option<i64>,
+    pub secondary_game_id: Option<i64>,
+    pub ternary_game_id: Option<i64>,
+    pub general_game_player_score: f64,
 }
 impl Streamer {
     pub fn load(dbconn: &PgConnection, id: i64) -> Result<Streamer, error::Error> {
@@ -164,7 +213,7 @@ pub struct SimilarStreamer {
     pub similarity: f64,
 }
 impl SimilarStreamer {
-    pub fn load(dbconn: &PgConnection, subject_id: i64) -> Result<Vec<SimilarStreamer>, error::Error> {
+    pub fn load(dbconn: &PgConnection, subject_id: i64, num: i64, offset: i64) -> Result<Vec<SimilarStreamer>, error::Error> {
         use schema::streamer_similarities::dsl::*;
         use schema::streamers::dsl::*;
         Ok(streamer_similarities
@@ -172,17 +221,13 @@ impl SimilarStreamer {
                 .select((id, name, profile_image_url, is_streaming, ratio))
                 .filter(subject.eq(subject_id).and(subject.ne(object)))
                 .order(ratio.desc())
-                .limit(10)
+                .limit(num)
+                .offset(offset)
                 .load::<SimilarStreamer>(dbconn)?)
     }
 }
 
-#[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
-pub struct Game {
-    pub id: i64,
-    pub name: Option<String>,
-    pub box_art_url: Option<String>,
-}
+
 #[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
 pub struct StreamMetadataChange {
     pub streamer_id: i64,
@@ -296,5 +341,281 @@ impl StreamRange {
             .filter(streamer_id.eq(id).and(range.overlaps_with(&(from, to))))
             .order(range.asc())
             .load::<StreamRange>(dbconn)?)*/
+    }
+}
+
+#[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
+#[table_name = "comments"]
+pub struct _Comment {
+    pub id: i32,
+    pub streamer_id: i64,
+    pub fingerprint_hash: Vec<u8>,
+    pub nickname: String,
+    pub password: Vec<u8>,
+    pub contents: String,
+    pub upvote: i32,
+    pub downvote: i32,
+    pub parent_id: i32,
+    pub deleted: bool,
+    pub score: f64,
+    pub time: chrono::DateTime<chrono::Utc>,
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+pub struct Comment {
+    pub id: i32,
+    pub streamer_id: i64,
+    pub fingerprint_hash: Vec<u8>,
+    pub nickname: String,
+    pub contents: Option<String>,
+    pub upvote: i32,
+    pub downvote: i32,
+    pub parent_id: i32,
+    pub deleted: bool,
+    pub score: f64,
+    pub time: chrono::DateTime<chrono::Utc>,
+}
+impl Comment {
+    pub fn load_by_streamer_id(dbconn: &PgConnection, _streamer_id: i64, count: i64, offset: i64) -> Result<Vec<Comment>, error::Error> {
+        use schema::comments::dsl::*;
+        Ok(comments
+            .filter(streamer_id.eq(_streamer_id))
+            .order((score.desc(), parent_id.desc(), id.asc()))
+            .limit(count)
+            .offset(offset)
+            .load::<_Comment>(dbconn)?
+            .into_iter()
+            .map(|c| Comment { 
+                id: c.id,
+                streamer_id: c.streamer_id,
+                fingerprint_hash: c.fingerprint_hash,
+                nickname: c.nickname,
+                contents: if c.deleted { None } else { Some(c.contents) },
+                upvote: c.upvote,
+                downvote: c.downvote,
+                parent_id: c.parent_id,
+                deleted: c.deleted,
+                score: c.score,
+                time: c.time,
+            }).collect())
+    }
+    pub fn vote(dbconn: &PgConnection, _id: i32, _fingerprint_hash: Vec<u8>, _upvote: bool) -> Result<(), error::Error> {
+        use schema::comment_votes::dsl::*;
+        diesel::insert_into(comment_votes)
+            .values((comment_id.eq(_id), fingerprint_hash.eq(_fingerprint_hash), upvote.eq(_upvote)))
+            .execute(dbconn)?;
+        Ok(())
+            
+    }
+}
+
+#[derive(Insertable, Serialize, Deserialize)]
+#[table_name = "comments"]
+pub struct NewComment {
+    pub streamer_id: i64,
+    pub nickname: String,
+    pub password: Vec<u8>,
+    pub contents: String,
+    pub fingerprint_hash: Vec<u8>,
+    pub parent_id: Option<i32>,
+}
+impl NewComment {
+    pub fn write(self, dbconn: &PgConnection) -> Result<(), error::Error> {
+        use schema::comments::dsl::*;
+        diesel::insert_into(comments)
+            .values(&self)
+            .execute(dbconn)?;
+        Ok(())
+    }
+}
+
+#[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
+pub struct StreamerRecentChattingKeyword {
+    pub keyword: String,
+    pub fraction: f64,
+}
+impl StreamerRecentChattingKeyword {
+    pub fn load(dbconn: &PgConnection, id: i64) -> Result<Vec<(String, f64)>, error::Error> {
+        use schema::streamer_recent_chatting_keywords::dsl::*;
+        Ok(streamer_recent_chatting_keywords
+            .select((keyword, fraction))
+            .filter(streamer_id.eq(id))
+            .load(dbconn)?)
+    }
+}
+
+#[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
+pub struct StreamersAverageSubscriberDistribution {
+    pub streamer_id: i64,
+    pub month: i32,
+    pub ratio: f64,
+}
+impl StreamersAverageSubscriberDistribution {
+    pub fn load(dbconn: &PgConnection, id: i64) -> Result<Vec<(i32, f64)>, error::Error> {
+        use schema::streamers_average_subscriber_distribution::dsl::*;
+        Ok(streamers_average_subscriber_distribution
+            .select((month, ratio))
+            .filter(streamer_id.eq(id))
+            .order(month)
+            .load(dbconn)?)
+    }
+}
+
+
+
+pub struct FatStreamerRanking;
+impl FatStreamerRanking {
+    pub fn load(dbconn: &PgConnection, num: i64, offset: i64, order_by: String, desc: bool) -> Result<Vec<FatStreamer>, error::Error> {
+        match (order_by.as_str(), desc) {
+            ("chatting_speed", true) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::chatting_speed.desc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("chatting_speed", false) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::chatting_speed.asc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("average_viewer_count", true) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::average_viewer_count.desc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("average_viewer_count", false) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::average_viewer_count.asc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("average_subscriber_ratio", true) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::average_subscriber_ratio.desc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("average_subscriber_ratio", false) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::average_subscriber_ratio.asc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("streaming_hours_per_week", true) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::streaming_hours_per_week.desc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("streaming_hours_per_week", false) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::streaming_hours_per_week.asc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("follower_count", true) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::follower_count.desc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("follower_count", false) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::follower_count.asc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("viewer_count", true) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::viewer_count.desc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("viewer_count", false) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::viewer_count.asc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("viewer_chatter_ratio", true) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::viewer_chatter_ratio.desc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            ("viewer_chatter_ratio", false) => {
+                Ok(fat_streamers::table.order_by(fat_streamers::viewer_chatter_ratio.asc().nulls_last())
+                    .limit(num)
+                    .offset(offset)
+                    .load::<FatStreamer>(dbconn)?)
+            },
+            _ => Err(error::Error::BadRequest),
+        }
+    }
+}
+
+#[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
+pub struct ViewerMigrationCount {
+    pub source: i64,
+    pub destination: i64,
+    pub migration_count: i32,
+    pub time: chrono::DateTime<chrono::Utc>,
+}
+impl ViewerMigrationCount {
+    pub fn load(dbconn: &PgConnection, id1: i64, id2: i64, from: chrono::DateTime<chrono::Utc>, to: chrono::DateTime<chrono::Utc>) -> Result<Vec<ViewerMigrationCount>, error::Error> {
+        use schema::viewer_migration_counts::dsl::*;
+        let ids = vec![id1, id2];
+        Ok(viewer_migration_counts
+            .filter(source.eq(any(&ids))
+                    .and(destination.eq(any(&ids)))
+                    .and(time.ge(&from))
+                    .and(time.lt(&to)))
+            .order(time.asc())
+            .load::<ViewerMigrationCount>(dbconn)?)
+    }
+}
+
+#[derive(Serialize, Deserialize, Queryable, QueryableByName, Associations, Debug)]
+pub struct ViewerMigrationCountRanking {
+    #[sql_type = "Int8"]
+    pub source_id: i64,
+    #[sql_type = "Text"]
+    pub source_name: String,
+    #[sql_type = "Nullable<Text>"]
+    pub source_profile_image_url: Option<String>,
+    #[sql_type = "Bool"]
+    pub source_is_streaming: bool,
+    #[sql_type = "Int8"]
+    pub destination_id: i64,
+    #[sql_type = "Text"]
+    pub destination_name: String,
+    #[sql_type = "Nullable<Text>"]
+    pub destination_profile_image_url: Option<String>,
+    #[sql_type = "Bool"]
+    pub destination_is_streaming: bool,
+    #[sql_type = "Int4"]
+    pub migration_count: i32,
+    #[sql_type = "Timestamptz"]
+    pub time: chrono::DateTime<chrono::Utc>,
+}
+
+impl ViewerMigrationCountRanking {
+    pub fn load(dbconn: &PgConnection, num: i64, offset: i64) -> Result<Vec<ViewerMigrationCountRanking>, error::Error> {
+       Ok(diesel::sql_query(r#"
+        SELECT s1.id as source_id, s1.name as source_name, s1.profile_image_url as source_profile_image_url, s1.is_streaming as source_is_streaming, 
+               s2.id as destination_id, s2.name as destination_name, s2.profile_image_url as destination_profile_image_url, s2.is_streaming as destination_is_streaming, 
+               migration_count, time
+                FROM viewer_migration_counts vmc 
+                INNER JOIN streamers s1 ON s1.id = vmc.source
+                INNER JOIN streamers s2 ON s2.id = vmc.destination
+                WHERE time = (SELECT time FROM viewer_migration_counts ORDER BY time DESC LIMIT 1)
+                ORDER BY vmc.migration_count DESC
+                LIMIT $1 OFFSET $2
+        ;"#)
+           .bind::<diesel::sql_types::Int8, _>(num)
+           .bind::<diesel::sql_types::Int8, _>(offset)
+           .load(dbconn)?)
     }
 }
