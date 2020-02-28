@@ -150,7 +150,6 @@
                   </svg>
                   <b>{tooltip_data[4].toFixed(1)}채팅/초</b>
                 </div>
-<<<<<<< HEAD
                 <div class="mt-1 flex flex-row flex-wrap items-center text-purple-600">
                   <svg area-hidden="true" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {faHistory.icon[0]} {faHistory.icon[1]}" class="w-4 h-4 mr-2 overflow-visible inline-block">
                     <path fill="currentColor" d="{faHistory.icon[4]}"/>
@@ -158,9 +157,6 @@
                   <b>업타임 {Math.floor((tooltip_data[0] - tooltip_data[5].started_at) / 3600)}시간{Math.round((tooltip_data[0] - tooltip_data[5].started_at) % 3600 / 60)}분</b>
                 </div>
               <p class="mt-2 text-xs px-1 border rounded-full text-white text-center" style="background-color: {dark_random_color(tooltip_data[5].game && tooltip_data[5].game.id || 0)}">
-=======
-              <p class="mt-2 text-xs px-1 border rounded-full text-white text-center" style="background-color: {text_to_dark_color(tooltip_data[5].game && '' + tooltip_data[5].game.id || '')}">
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
                 {tooltip_data[5].game != null? tooltip_data[5].game.name : ""}
               </p>
           </div>
@@ -191,12 +187,8 @@ import { faKey } from '@fortawesome/free-solid-svg-icons/faKey'
 import { faSun } from '@fortawesome/free-solid-svg-icons/faSun'
 import { faMoon } from '@fortawesome/free-solid-svg-icons/faMoon'
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons/faExternalLinkAlt'
-<<<<<<< HEAD
 import { faHistory } from '@fortawesome/free-solid-svg-icons/faHistory';
 import { dark_random_color, findLastIndex } from "../util.js";
-=======
-import { text_to_dark_color } from "../util.js";
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 import { API } from '../api.js';
 
 export let days_ago;
@@ -289,22 +281,11 @@ onMount(async ()=> {
     else if(j>0) return stream_metadata_changes[j-1];
     else return null;
   });
-<<<<<<< HEAD
   stream_changes = stream_changes.map((d, i)=>[...d, metadatas[i]]);
   let sm_n = 3, chatting_speed_sm = [stream_changes.slice(0, sm_n).reduce((a,b)=>a+b[4], 0)/sm_n];
   for(let i=sm_n, l=stream_changes.length, sm=chatting_speed_sm[0]; i<l; ++i){
     sm = sm + (stream_changes[i][4] - stream_changes[i-sm_n][4])/sm_n;
     chatting_speed_sm.push(sm);
-=======
-  console.log(stream_metadata_changes);
-  stream_changes = stream_changes.map((d, i)=>[...d, metadatas[i]]);
-  let sm_n = 20, chatting_speed_sm = [stream_changes.slice(0, sm_n).reduce((a,b)=>a+b[4], 0)/sm_n];
-  console.log(chatting_speed_sm);
-  for(let i=sm_n, l=stream_changes.length, sm=chatting_speed_sm[0]; i<l; ++i){
-    sm = sm + (stream_changes[i][4] - stream_changes[i-sm_n][4])/sm_n;
-    chatting_speed_sm.push(sm);
-    console.log(sm);
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
   }
   for(let i=0, sm=0; i<Math.min(sm_n, stream_changes.length); ++i){
     sm = sm*i/(i+1) + stream_changes[i][4]/(i+1);
@@ -319,7 +300,6 @@ onMount(async ()=> {
     tooltip_x = x; 
     tooltip_y = y;
     let target_date = ixscale(x);
-<<<<<<< HEAD
     let right_index = stream_changes.findIndex(d => d[0] >= target_date),
         left_index = findLastIndex(stream_changes, d => d[0] <= target_date);
     let nearest_index; 
@@ -336,16 +316,6 @@ onMount(async ()=> {
     }
 
     if(Math.abs(stream_changes[nearest_index][0] - target_date) < 60*60){ // || right_index != 0 && metadatas[right_index].started_at == metadatas[right_index-1].started_at) {
-=======
-    let right_index = stream_changes.findIndex(d => d[0] >= target_date);
-    if(right_index < 0){
-      tooltip_data = null;
-      return;
-    }
-    let nearest_index = right_index != 0 && Math.abs(stream_changes[right_index-1][0] - target_date) <= Math.abs(stream_changes[right_index][0] - target_date)?
-            right_index-1 : right_index;
-    if(Math.abs(stream_changes[nearest_index][0] - target_date) < 60*60 || right_index != 0 && metadatas[right_index].started_at == metadatas[right_index-1].started_at) {
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
       tooltip_data = stream_changes[nearest_index];
     }
     else 

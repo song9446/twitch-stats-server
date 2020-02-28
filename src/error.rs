@@ -28,10 +28,7 @@ impl actix_web::ResponseError for Error {
         match self {
             Error::Diesel(err) => match err {
                 diesel::NotFound => HttpResponse::NotFound().finish(),
-<<<<<<< HEAD
                 diesel::result::Error::DatabaseError(diesel::result::DatabaseErrorKind::UniqueViolation, _) => HttpResponse::BadRequest().finish(),
-=======
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
                 _ => HttpResponse::InternalServerError().finish(),
             },
             Error::Query(err) => HttpResponse::BadRequest().finish(),

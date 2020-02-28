@@ -4,7 +4,6 @@
 	export let segment;
 </script>
 
-<<<<<<< HEAD
 <header>
   <Navigation {segment} />
 </header>
@@ -16,7 +15,8 @@
 <footer class="w-full bg-primary-600 text-xs text-white py-6 px-2">
   <div class="container m-auto flex flex-col">
     <div>
-      <a href="/terms"> 개인정보 처리방침 </a>
+      <a href="/about"> tsu.gg 안내 </a>
+      <a href="/terms" class="ml-2"> 개인정보 처리방침 </a>
       <span class="ml-2"> 연락처: eunchul.dev@gmail.com </span>
     </div>
     <span class="mt-2">
@@ -24,8 +24,3 @@
     </span>
   </div>
 </footer>
-=======
-<Navigation {segment} />
-
-<slot></slot>
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643

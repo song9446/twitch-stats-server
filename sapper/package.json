@@ -6,11 +6,7 @@
 		"watch:tailwind": "postcss static/tailwind.css -o static/global.css -w",
 		"build:tailwind": "NODE_ENV=production postcss static/tailwind.css -o static/global.css",
 		"dev:tailwind": "postcss static/tailwind.css -o static/global.css",
-<<<<<<< HEAD
 		"dev": "npm run dev:tailwind && sapper dev --port 8080",
-=======
-		"dev": "npm run dev:tailwind && sapper dev --port 80",
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 		"build": "npm run build:tailwind && sapper build --port 443",
 		"export": "npm run build:tailwind && sapper export --legacy",
 		"start": "node __sapper__/build",
@@ -25,13 +21,9 @@
 		"compression": "^1.7.1",
 		"node-fetch": "^2.6.0",
 		"polka": "next",
-<<<<<<< HEAD
 		"sirv": "^0.4.0",
 		"svelte-heatmap": "^0.4.0",
 		"svelte-toast": "^0.2.0"
-=======
-		"sirv": "^0.4.0"
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 	},
 	"devDependencies": {
 		"@babel/core": "^7.0.0",
@@ -51,10 +43,7 @@
 		"rollup-plugin-terser": "^4.0.4",
 		"sapper": "^0.27.0",
 		"svelte": "^3.0.0",
-<<<<<<< HEAD
 		"svelte-calendar": "^1.3.4",
-=======
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 		"tailwindcss": "^1.1.2",
 		"tailwindcss-spinner": "^1.0.0",
 		"tailwindcss-transforms": "^2.2.0",

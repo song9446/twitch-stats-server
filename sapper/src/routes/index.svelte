@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 <svelte:head>
 	<title>스트리머 순위 - 트수gg</title>
 </svelte:head>
@@ -419,20 +418,3 @@ function on_streamer_search(target) {
     border-bottom-width: 2px;
   }
 </style>
-=======
-<script>
-import { onMount } from "svelte";
-onMount(()=>{
-  window.location = "map";
-});
-</script>
-
-<svelte:head>
-	<title>스트리머 지도</title>
-</svelte:head>
-
-<div>
-잠시만요..
-</div>
-
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643

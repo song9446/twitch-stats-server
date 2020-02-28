@@ -31,11 +31,7 @@ if(dev){
       sirv('dehydrated', { dev: true, dotfiles: true}),
       sapper.middleware()
     )
-<<<<<<< HEAD
     .listen(8080, err => {
-=======
-    .listen(80, err => {
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
       if (err) console.log('error', err);
     });
 }

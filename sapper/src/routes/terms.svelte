@@ -1,3 +1,7 @@
+<svelte:head>
+	<title>개인정보 처리방침- 트수gg</title>
+</svelte:head>
+
 <div class="container m-auto p-2 pb-16">
   <h1 class="md:text-3xl text-2xl mt-16">
     개인정보 처리방침

@@ -1,7 +1,6 @@
 use diesel::prelude::*;
 use diesel::RunQueryDsl;
 use diesel::QueryDsl;
-<<<<<<< HEAD
 use diesel::pg::expression::dsl::any;
 use diesel::sql_types::*;
 use diesel::{r2d2::ConnectionManager, PgConnection};
@@ -9,13 +8,6 @@ use std::collections::Bound;
 use super::schema_manual::*;
 use super::schema;
 use super::schema::{stream_ranges, comments, streamers};
-=======
-use diesel::sql_types::*;
-use diesel::{r2d2::ConnectionManager, PgConnection};
-use std::collections::Bound;
-use super::schema;
-use super::schema::stream_ranges;
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 use super::error;
 pub type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
@@ -114,10 +106,7 @@ impl StreamerMapElement {
             */
     }
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 /*
 joinable!(schema::streamer_tsne_pos -> schema::streamer_clusters (streamer_id));
 #[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
@@ -147,7 +136,6 @@ impl StreamerMapElement {
 }
 */
 
-<<<<<<< HEAD
 #[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
 pub struct Game {
     pub id: i64,
@@ -189,8 +177,6 @@ impl FatStreamer {
             .first::<FatStreamer>(dbconn)?)
     }
 }
-=======
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 
 #[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
 pub struct Streamer {
@@ -204,14 +190,11 @@ pub struct Streamer {
     pub type_: Option<String>,
     pub is_streaming: bool,
     pub average_viewer_count: i32,
-<<<<<<< HEAD
     pub average_subscriber_chat_ratio: f64,
     pub primary_game_id: Option<i64>,
     pub secondary_game_id: Option<i64>,
     pub ternary_game_id: Option<i64>,
     pub general_game_player_score: f64,
-=======
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 }
 impl Streamer {
     pub fn load(dbconn: &PgConnection, id: i64) -> Result<Streamer, error::Error> {
@@ -230,11 +213,7 @@ pub struct SimilarStreamer {
     pub similarity: f64,
 }
 impl SimilarStreamer {
-<<<<<<< HEAD
     pub fn load(dbconn: &PgConnection, subject_id: i64, num: i64, offset: i64) -> Result<Vec<SimilarStreamer>, error::Error> {
-=======
-    pub fn load(dbconn: &PgConnection, subject_id: i64) -> Result<Vec<SimilarStreamer>, error::Error> {
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
         use schema::streamer_similarities::dsl::*;
         use schema::streamers::dsl::*;
         Ok(streamer_similarities
@@ -242,26 +221,13 @@ impl SimilarStreamer {
                 .select((id, name, profile_image_url, is_streaming, ratio))
                 .filter(subject.eq(subject_id).and(subject.ne(object)))
                 .order(ratio.desc())
-<<<<<<< HEAD
                 .limit(num)
                 .offset(offset)
-=======
-                .limit(10)
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
                 .load::<SimilarStreamer>(dbconn)?)
     }
 }
 
-<<<<<<< HEAD
 
-=======
-#[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
-pub struct Game {
-    pub id: i64,
-    pub name: Option<String>,
-    pub box_art_url: Option<String>,
-}
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
 #[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
 pub struct StreamMetadataChange {
     pub streamer_id: i64,
@@ -377,7 +343,6 @@ impl StreamRange {
             .load::<StreamRange>(dbconn)?)*/
     }
 }
-<<<<<<< HEAD
 
 #[derive(Serialize, Deserialize, Queryable, Associations, Debug)]
 #[table_name = "comments"]
@@ -654,5 +619,3 @@ impl ViewerMigrationCountRanking {
            .load(dbconn)?)
     }
 }
-=======
->>>>>>> d2889d99c97bdce47071bfd176272aab8192b643
