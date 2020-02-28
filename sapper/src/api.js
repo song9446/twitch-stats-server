@@ -103,12 +103,6 @@ export const API = {
   average_subscriber_distribution: async function(id) {
     return await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/subscriber/average-distribution`);
   },
-  realtime_chatting_speed_streamer_ranking: async function(offset=0) {
-    return await fetch_cbor(API_SERVER_HOST + `/api/streamer-ranking/realtime-chatting-speed?offset=${offset}`);
-  },
-  average_viewer_count_streamer_ranking: async function(offset=0) {
-    return await fetch_cbor(API_SERVER_HOST + `/api/streamer-ranking/average-viewer-count?offset=${offset}`);
-  },
   streamer_ranking: async function(offset=0, order_by="chatting_speed", desc=true) {
     return (await fetch_cbor(API_SERVER_HOST + `/api/streamer-ranking?offset=${offset}&order_by=${order_by}&desc=${desc}`)).filter(s => !BLACKLIST.includes(s.id));
   },
