@@ -120,3 +120,5 @@ dist
 
 nohup.out
 sapper/nohup.out
+
+cert/
