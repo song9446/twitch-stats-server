@@ -209,12 +209,14 @@
           <KeywordCloud streamer_id={streamer.id}/>
         </div>
       </Panel>
-      <Panel class="w-full">
+      {#if !COMMENTS_BLACKLIST.includes(streamer.id) } 
+      <!--<Panel class="w-full">
         <h2 slot="title" class="inline-block"> 댓글 </h2>
         <div slot="contents" class="w-full p-2">
           <Comments streamer_id={streamer.id}/>
         </div>
-      </Panel>
+      </Panel>-->
+      {/if}
     </div>
   </div>
 
@@ -246,6 +248,7 @@
 	import GameBadges from "../../components/GameBadges.svelte"; 
 	import StreamCalendarHeatmap from "../../components/StreamCalendarHeatmap.svelte"; 
   import { flip } from "svelte/animate";
+	import { COMMENTS_BLACKLIST } from '../../api.js';
 
   export let streamer;
   export let similar_streamers;

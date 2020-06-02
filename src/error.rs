@@ -2,6 +2,8 @@ use thiserror::Error as Thiserror;
 use actix_web::HttpResponse;
 #[derive(Debug, Thiserror)]
 pub enum Error {
+    #[error("sled error")]
+    Sled(#[from] sled::Error),
     #[error("r2d2 error")]
     R2d2(#[from] r2d2::Error),
     #[error("db error")]
@@ -14,6 +16,8 @@ pub enum Error {
     Query(#[from] serde_qs::Error),
     #[error("bad request")]
     BadRequest,
+    #[error("wierd")]
+    Wierd,
 }
 impl From<actix_web::error::BlockingError<Error>> for Error {
     fn from(err: actix_web::error::BlockingError<Error>) -> Self {

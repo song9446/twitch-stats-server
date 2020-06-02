@@ -359,10 +359,7 @@ function load_ranking(){
   API.streamer_ranking(offsets[JSON.stringify(last_state)], last_state.order_by, last_state.desc).then(ranking => {
     if(ranking){
       rankings[JSON.stringify(last_state)] = [...rankings[JSON.stringify(last_state)], ...ranking]
-      console.log(ranking);
       ranking_update_time = Math.max(ranking_update_time, ...ranking.map(r => new Date(r.last_streaming_time).getTime()));
-      console.log(ranking_update_time);
-      console.log(new Date(ranking_update_time));
     }
   });
 }

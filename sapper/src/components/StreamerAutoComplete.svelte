@@ -104,7 +104,7 @@
           <img class="rounded-full h-8 w-8" src={streamer.profile_image_url} />
           <div class="px-2"><span>{streamer.name}</span></div>
         </li>
-        <button style="line-height: 1rem" class="absolute right-0 w-4 h-4 text-center -mr-6 -mt-8 text-gray-800 bg-white rounded-full" on:mousedown={e=>remove_from_recent_history(streamer, e)}>🞩</button>
+        <button style="line-height: 1rem" class="absolute right-0 w-4 h-4 text-center -mr-6 -mt-8 text-gray-800 bg-white rounded-full" on:mousedown={e=>remove_from_recent_history(streamer, e)}>x</button>
       {/each}
     {:else}
       {#each filtered_streamers as streamer}

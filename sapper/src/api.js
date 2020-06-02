@@ -1,6 +1,7 @@
 import { CBOR } from './cbor.js';
 import fetch from 'node-fetch';
-const API_SERVER_HOST = "https://tsu.gg:3000"
+const API_SERVER_HOST = "https://tsu.gg:3000";
+const NEWS_API_SERVER_HOST = "https://news.tsu.gg";
 const BLACKLIST = [
   462658994, //포칸지우티비
   484584043, //폭스홀짝
@@ -14,6 +15,12 @@ const BLACKLIST = [
   480566876, //포칸마카오족보
   462658994, //포칸지우티비
   462297074, //발리폭스홀짝족보
+];
+const BLACKLIST_KEYWORDS = [
+  '포칸', '버경', '발리', '족보', '금은동',
+];
+export const COMMENTS_BLACKLIST = [
+  49469880,
 ];
 async function _fetch(path, params) {
   let res;
@@ -32,9 +39,14 @@ async function fetch_cbor(path) {
   let body = await res.arrayBuffer();
   return CBOR.decode(body);
 }
+async function fetch_json(path) {
+  let res = await _fetch(path);
+  let json = await res.json();
+  return json;
+}
 export const API = {
   streamer_map: async function () {
-    return (await fetch_cbor(API_SERVER_HOST + "/api/streamer-map")).filter(s => !BLACKLIST.includes(s.id));
+    return (await fetch_cbor(API_SERVER_HOST + "/api/streamer-map")).filter(s => !BLACKLIST.includes(s.id) && BLACKLIST_KEYWORDS.every(k => s.name.search(k)<0));
   },
   streamer: async function (id) {
     return await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}`);
@@ -52,7 +64,7 @@ export const API = {
   },
   similar_streamers: async function (id, offset=0) {
     if(!BLACKLIST.includes(id-0))
-      return (await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/similar-streamers?offset=${offset}`)).filter(s => !BLACKLIST.includes(s.id));
+      return (await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/similar-streamers?offset=${offset}`)).filter(s => !BLACKLIST.includes(s.id) && BLACKLIST_KEYWORDS.every(k => s.name.search(k)<0));
     else
       return (await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/similar-streamers?offset=${offset}`)).filter(s => BLACKLIST.includes(s.id));
   },
@@ -104,7 +116,7 @@ export const API = {
     return await fetch_cbor(API_SERVER_HOST + `/api/streamer/${id}/subscriber/average-distribution`);
   },
   streamer_ranking: async function(offset=0, order_by="chatting_speed", desc=true) {
-    return (await fetch_cbor(API_SERVER_HOST + `/api/streamer-ranking?offset=${offset}&order_by=${order_by}&desc=${desc}`)).filter(s => !BLACKLIST.includes(s.id));
+    return (await fetch_cbor(API_SERVER_HOST + `/api/streamer-ranking?offset=${offset}&order_by=${order_by}&desc=${desc}`)).filter(s => !BLACKLIST.includes(s.id) && BLACKLIST_KEYWORDS.every(k => s.name.search(k)<0));
   },
   viewer_migration_counts: async function(id1, id2, from, to) {
     return await fetch_cbor(API_SERVER_HOST + `/api/viewer-migrations?id1=${id1}&id2=${id2}&from=${from.toISOString()}&to=${to.toISOString()}`);
@@ -112,4 +124,7 @@ export const API = {
   viewer_migration_count_ranking: async function(offset) {
     return await fetch_cbor(API_SERVER_HOST + `/api/viewer-migration-ranking?offset=${offset}`);
   },
+  news: async function() {
+    return await fetch_json(NEWS_API_SERVER_HOST  + ``);
+  }
 }

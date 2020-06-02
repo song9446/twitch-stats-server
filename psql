@@ -1,0 +1,1 @@
+SELECT 1 postgresql://postgres:Thelifeisonlyonce@133.130.124.159/twitch_stats

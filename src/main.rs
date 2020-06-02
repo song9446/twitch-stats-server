@@ -11,13 +11,14 @@ use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use dotenv;
 use openssl::ssl::{SslAcceptor, SslFiletype, SslMethod};
-
+use byteorder::{BigEndian, LittleEndian, ReadBytesExt, WriteBytesExt};
 
 mod schema_manual;
 mod schema;
 mod model;
 mod error;
 mod util;
+mod cache;
 
 #[derive(Serialize, Deserialize)]
 struct ErrorResponse {
@@ -30,14 +31,16 @@ pub type Pool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 
 #[get("/api/streamer-map")]
-async fn streamer_map(dbpool: web::Data<Pool>) -> Result<HttpResponse, error::Error> {
-    web::block(move || -> Result<Vec<u8>, error::Error> {
-        let dbconn: &PgConnection = &*dbpool.get()?;
-        let res = model::StreamerMapElement::load(dbconn)?;
-        Ok(serde_cbor::to_vec(&res)?)
-    })
-    .await
-    .map_err(error::Error::from)
+async fn streamer_map(dbpool: web::Data<Pool>, config: web::Data<Config>, cache_db: web::Data<cache::CacheDb>) -> Result<HttpResponse, error::Error> {
+    let cache_duration_secs = config.cache_duration_secs;
+    cache::load_or_update(&cache_db, b"viewer_migration_count_ranking", cache_duration_secs, || async move {
+        web::block(move || -> Result<Vec<u8>, error::Error> {
+            let dbconn: &PgConnection = &*dbpool.get()?;
+            let res = model::StreamerMapElement::load(dbconn)?;
+            Ok(serde_cbor::to_vec(&res)?)
+        }).await
+        .map_err(error::Error::from)
+    }).await
     .map(|res| HttpResponse::Ok().body(res))
 }
 
@@ -184,17 +187,25 @@ struct RandkingQuery {
     desc: Option<bool>,
 }
 #[get("/api/streamer-ranking")]
-async fn streamer_ranking(dbpool: web::Data<Pool>, config: web::Data<Config>, query: web::Query<RandkingQuery>) -> Result<HttpResponse, error::Error> {
+async fn streamer_ranking(dbpool: web::Data<Pool>, config: web::Data<Config>, cache_db: web::Data<cache::CacheDb>, query: web::Query<RandkingQuery>) -> Result<HttpResponse, error::Error> {
     let num = config.item_num_per_ranking_req;
+    let cache_duration_secs = config.cache_duration_secs;
     let RandkingQuery{ offset, order_by, desc } = query.into_inner();
     let desc = desc.unwrap_or(true);
-    web::block(move || -> Result<Vec<u8>, error::Error> {
-        let dbconn: &PgConnection = &*dbpool.get()?;
-        let res = model::FatStreamerRanking::load(dbconn, num, offset, order_by, desc)?;
-        Ok(serde_cbor::to_vec(&res)?)
-    })
-    .await
-    .map_err(error::Error::from)
+    let mut cache_key = Vec::new();
+    cache_key.extend_from_slice(b"streamer_ranking");
+    cache_key.write_i64::<LittleEndian>(offset).unwrap();
+    cache_key.extend_from_slice(order_by.as_bytes());
+    cache_key.write_u8(desc as u8);
+    cache::load_or_update(&cache_db, &cache_key, cache_duration_secs, || async move {
+        let dbpool = dbpool.clone();
+        web::block(move || -> Result<Vec<u8>, error::Error> {
+            let dbconn: &PgConnection = &*dbpool.get()?;
+            let res = model::FatStreamerRanking::load(dbconn, num, offset, order_by, desc)?;
+            Ok(serde_cbor::to_vec(&res)?)
+        }).await
+        .map_err(error::Error::from)
+    }).await
     .map(|res| HttpResponse::Ok().body(res))
 }
 
@@ -309,22 +320,29 @@ struct MigrationRankingQuery {
     offset: i64,
 }
 #[get("/api/viewer-migration-ranking")]
-async fn viewer_migration_count_ranking(dbpool: web::Data<Pool>, config: web::Data<Config>, query: web::Query<MigrationRankingQuery>) -> Result<HttpResponse, error::Error> {
+async fn viewer_migration_count_ranking(dbpool: web::Data<Pool>, config: web::Data<Config>, cache_db: web::Data<cache::CacheDb>, query: web::Query<MigrationRankingQuery>) -> Result<HttpResponse, error::Error> {
     let num = config.item_num_per_ranking_req;
     let MigrationRankingQuery{ offset } = query.into_inner();
-    web::block(move || -> Result<Vec<u8>, error::Error> {
-        let dbconn: &PgConnection = &*dbpool.get()?;
-        let res = model::ViewerMigrationCountRanking::load(dbconn, num, offset)?;
-        Ok(serde_cbor::to_vec(&res)?)
-    })
-    .await
-    .map_err(error::Error::from)
+    let cache_duration_secs = config.cache_duration_secs;
+    let mut cache_key = Vec::new();
+    cache_key.extend_from_slice(b"viewer_migration_count_ranking");
+    cache_key.write_i64::<LittleEndian>(offset).unwrap();
+    cache::load_or_update(&cache_db, &cache_key, cache_duration_secs, || async move {
+        let dbpool = dbpool.clone();
+        web::block(move || -> Result<Vec<u8>, error::Error> {
+            let dbconn: &PgConnection = &*dbpool.get()?;
+            let res = model::ViewerMigrationCountRanking::load(dbconn, num, offset)?;
+            Ok(serde_cbor::to_vec(&res)?)
+        }).await
+        .map_err(error::Error::from)
+    }).await
     .map(|res| HttpResponse::Ok().body(res))
 }
 
 #[derive(Clone)]
 struct Config {
     recent_duration: chrono::Duration,
+    cache_duration_secs: u64,
     comment_num_per_page: i64,
     item_num_per_ranking_req: i64,
     item_num_per_similar_streamers: i64,
@@ -346,15 +364,19 @@ async fn main() {
             a.allowed_origin(b)
         }).finish();*/
     let recent_duration: i64 = std::env::var("RECENT_DURATION").unwrap_or("604800".to_string()).parse().unwrap();
+    let cache_duration_secs: u64 = std::env::var("CACHE_DURATION").unwrap_or("60".to_string()).parse().unwrap();
     let private_key = std::env::var("PRIVATE_KEY").expect("PRIVATE_KEY");
     let cert = std::env::var("CERT").expect("CERT");
     
     let data = Config{
         recent_duration: chrono::Duration::seconds(recent_duration),
+        cache_duration_secs: cache_duration_secs,
         comment_num_per_page: std::env::var("COMMENT_NUM_PER_PAGE").unwrap_or("10".to_string()).parse().unwrap(),
         item_num_per_ranking_req: std::env::var("ITEM_NUM_PER_RANKING_REQ").unwrap_or("10".to_string()).parse().unwrap(),
         item_num_per_similar_streamers: std::env::var("ITEM_NUM_PER_RANKING_REQ").unwrap_or("10".to_string()).parse().unwrap(),
     };
+
+    let cache = cache::CacheDb::new();
 
     let mut ssl_builder = SslAcceptor::mozilla_intermediate(SslMethod::tls()).unwrap();
     ssl_builder
@@ -367,6 +389,7 @@ async fn main() {
             //.wrap(middleware::DefaultHeaders::new().header("X-Version", "0.2"))
             .data(dbpool.clone())
             .data(data.clone())
+            .data(cache.clone())
             .wrap(allow_origins.clone().split_whitespace().fold(Cors::new(), |a, b| {
                 a.allowed_origin(b)
             }).finish())
