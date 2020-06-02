@@ -122,4 +122,4 @@ nohup.out
 sapper/nohup.out
 
 cert/
-cert/*
+cache.sled/
